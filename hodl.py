@@ -54,15 +54,15 @@ def hodl_redeemScript(pubKey, nLockTime):
     return CScript([nLockTime, OP_NOP2, OP_DROP, pubkey, OP_CHECKSIG])
 
 
-def spend_hodl_redeemScript(privkey, nLockTime, unsigned_tx, n):
+def spend_hodl_redeemScript(pubkey, nLockTime, unsigned_tx, n):
     """Spend a hodl output
 
     Returns the complete scriptSig
     """
-    redeemScript = hodl_redeemScript(privkey, nLockTime)
+    redeemScript = hodl_redeemScript(pubkey, nLockTime)
     sighash = SignatureHash(redeemScript, unsigned_tx, n, SIGHASH_ALL)
-    sig = privkey.sign(sighash) + bytes([SIGHASH_ALL])
-    return CScript([sig, redeemScript])
+    #sig = privkey.sign(sighash) + bytes([SIGHASH_ALL])
+    return CScript([redeemScript])
 
 
 # ----- create -----
@@ -93,7 +93,7 @@ parser_spend.add_argument(
 
 def spend_command(args):
     args.addr = CBitcoinAddress(args.addr)
-    redeemScript = hodl_redeemScript(args.privkey, args.nLockTime)
+    redeemScript = hodl_redeemScript(args.pubkey, args.nLockTime)
     scriptPubKey = redeemScript.to_p2sh_scriptPubKey()
     proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
     prevouts = []
@@ -137,7 +137,7 @@ def spend_command(args):
         [CTxIn(
             txin.prevout,
             spend_hodl_redeemScript(
-                args.privkey,
+                args.pubkey,
                 args.nLockTime,
                 unsigned_tx,
                 i),
@@ -159,7 +159,7 @@ if args.verbose:
 if args.testnet:
     bitcoin.SelectParams('testnet')
 
-# args.privkey = CBitcoinSecret(args.privkey)
+#args.privkey = CBitcoinSecret(args.privkey)
 
 if not hasattr(args, 'cmd_func'):
     parser.error('No command specified')
