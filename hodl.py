@@ -54,17 +54,6 @@ def hodl_redeemScript(pubKey, nLockTime):
     return CScript([nLockTime, OP_NOP2, OP_DROP, pubkey, OP_CHECKSIG])
 
 
-def spend_hodl_redeemScript(pubkey, nLockTime, unsigned_tx, n):
-    """Spend a hodl output
-
-    Returns the complete scriptSig
-    """
-    redeemScript = hodl_redeemScript(pubkey, nLockTime)
-    sighash = SignatureHash(redeemScript, unsigned_tx, n, SIGHASH_ALL)
-    #sig = privkey.sign(sighash) + bytes([SIGHASH_ALL])
-    return CScript([redeemScript])
-
-
 # ----- create -----
 parser_create = subparsers.add_parser(
         'create',
@@ -133,20 +122,16 @@ def spend_command(args):
         [CTxOut(sum_in - fees, args.addr.to_scriptPubKey())],
         args.nLockTime)
 
-    signed_tx = CTransaction(
+    ready_to_sign_tx = CTransaction(
         [CTxIn(
             txin.prevout,
-            spend_hodl_redeemScript(
-                args.pubkey,
-                args.nLockTime,
-                unsigned_tx,
-                i),
+            redeemScript,
             nSequence=0)
             for i, txin in enumerate(unsigned_tx.vin)],
         unsigned_tx.vout,
         unsigned_tx.nLockTime)
 
-    print(b2x(signed_tx.serialize()))
+    print(b2x(ready_to_sign_tx.serialize()))
 
 parser_spend.set_defaults(cmd_func=spend_command)
 
@@ -158,8 +143,6 @@ if args.verbose:
 
 if args.testnet:
     bitcoin.SelectParams('testnet')
-
-#args.privkey = CBitcoinSecret(args.privkey)
 
 if not hasattr(args, 'cmd_func'):
     parser.error('No command specified')
