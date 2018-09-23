@@ -102,33 +102,25 @@ parser_spend.add_argument(
 
 def spend_command(args):
     args.addr = CBitcoinAddress(args.addr)
-
     redeemScript = hodl_redeemScript(args.privkey, args.nLockTime)
     scriptPubKey = redeemScript.to_p2sh_scriptPubKey()
-
     proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
-
     prevouts = []
     for prevout in args.prevouts:
         try:
             txid, n = prevout.split(':')
-
             txid = lx(txid)
             n = int(n)
-
             outpoint = COutPoint(txid, n)
         except ValueError:
             args.parser.error('Invalid output: %s' % prevout)
-
         try:
             prevout = proxy.gettxout(outpoint)
         except IndexError:
             args.parser.error('Outpoint %s not found' % outpoint)
-
         prevout = prevout['txout']
         if prevout.scriptPubKey != scriptPubKey:
             args.parser.error('Outpoint not correct scriptPubKey')
-
         prevouts.append((outpoint, prevout))
 
     sum_in = sum(prev_txout.nValue for outpoint, prev_txout in prevouts)
