@@ -18,8 +18,7 @@ from bitcoin.core import (
 )
 from bitcoin.core.script import (
         OP_NOP2, OP_DROP, OP_CHECKSIG,
-        CScript,
-        SignatureHash, SIGHASH_ALL,
+        CScript
 )
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinAddress
