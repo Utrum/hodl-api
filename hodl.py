@@ -39,16 +39,11 @@ bitcoin.params = bitcoin.core.coreparams = KomodoParams()
 
 parser = argparse.ArgumentParser(
     description="hodl your bitcoins with CHECKLOCKTIMEVERIFY")
-parser.add_argument('-v', action='store_true',
-                    dest='verbose',
-                    help='Verbose')
-parser.add_argument('-t', action='store_true',
-                    dest='testnet',
-                    help='Enable testnet')
-parser.add_argument('pubkey', action='store',
-                    help='Public key')
-parser.add_argument('nLockTime', action='store', type=int,
-                    help='nLockTime')
+parser.add_argument('-v', action='store_true', dest='verbose', help='Verbose')
+parser.add_argument(
+    '-t', action='store_true', dest='testnet', help='Enable testnet')
+parser.add_argument('pubkey', action='store', help='Public key')
+parser.add_argument('nLockTime', action='store', type=int, help='nLockTime')
 subparsers = parser.add_subparsers(
     title='Subcommands',
     description='All operations are done through subcommands:')
@@ -89,15 +84,11 @@ parser_create.set_defaults(cmd_func=create_command)
 
 # ----- spend -----
 parser_spend = subparsers.add_parser(
-    'spend',
-    help='Spend (all) your hodled coins')
+    'spend', help='Spend (all) your hodled coins')
 parser_spend.add_argument(
-    'prevouts', nargs='+',
-    metavar='txid:n',
-    help='Transaction output')
+    'prevouts', nargs='+', metavar='txid:n', help='Transaction output')
 parser_spend.add_argument(
-    'addr', action='store',
-    help='Address to send the funds too')
+    'addr', action='store', help='Address to send the funds too')
 
 
 def spend_command(args):
