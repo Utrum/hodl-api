@@ -22,7 +22,7 @@ from bitcoin.core.script import (
         SignatureHash, SIGHASH_ALL,
 )
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinSecret, CBitcoinAddress
+from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinAddress
 
 
 class KomodoParams(bitcoin.core.CoreMainParams):
