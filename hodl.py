@@ -118,7 +118,7 @@ def spend_command(args):
         [CTxIn(outpoint, nSequence=0) for outpoint, prevout in prevouts],
         [
             CTxOut(sum_in - fees, args.addr.to_scriptPubKey()),
-            CTxOut(0, CScript([OP_RETURN, txid]))
+            CTxOut(0, CScript([OP_RETURN, str(txid)]))
         ],
         args.nLockTime)
 
