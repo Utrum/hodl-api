@@ -123,7 +123,7 @@ def spend_command(args):
                 CScript(
                     [
                         OP_RETURN,
-                        b('FOR TXID' + str(txid))
+                        ('FOR TXID' + str(txid)).encode()
                     ]
                 )
             )
