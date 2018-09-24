@@ -17,7 +17,7 @@ from bitcoin.core import (
         COutPoint, CTxIn, CTxOut, CTransaction
 )
 from bitcoin.core.script import (
-        OP_NOP2, OP_DROP, OP_CHECKSIG,
+        OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN,
         CScript
 )
 from bitcoin.core.key import CPubKey
@@ -116,7 +116,13 @@ def spend_command(args):
 
     unsigned_tx = CTransaction(
         [CTxIn(outpoint, nSequence=0) for outpoint, prevout in prevouts],
-        [CTxOut(sum_in - fees, args.addr.to_scriptPubKey())],
+        [
+            CTxOut(sum_in - fees, args.addr.to_scriptPubKey()),
+            CTxOut(
+                0,
+                CScript([OP_RETURN, ('REWARD SPENT').encode()])
+            )
+        ],
         args.nLockTime)
 
     ready_to_sign_tx = CTransaction(
