@@ -39,8 +39,6 @@ bitcoin.params = bitcoin.core.coreparams = KomodoParams()
 parser = argparse.ArgumentParser(
     description="hodl your bitcoins with CHECKLOCKTIMEVERIFY")
 parser.add_argument('-v', action='store_true', dest='verbose', help='Verbose')
-parser.add_argument(
-    '-t', action='store_true', dest='testnet', help='Enable testnet')
 parser.add_argument('pubkey', action='store', help='Public key')
 parser.add_argument('nLockTime', action='store', type=int, help='nLockTime')
 subparsers = parser.add_subparsers(
@@ -139,9 +137,6 @@ args.parser = parser
 
 if args.verbose:
     logging.root.setLevel('DEBUG')
-
-if args.testnet:
-    bitcoin.SelectParams('testnet')
 
 if not hasattr(args, 'cmd_func'):
     parser.error('No command specified')
