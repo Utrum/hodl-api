@@ -116,7 +116,10 @@ def spend_command(args):
 
     unsigned_tx = CTransaction(
         [CTxIn(outpoint, nSequence=0) for outpoint, prevout in prevouts],
-        [CTxOut(sum_in - fees, args.addr.to_scriptPubKey())],
+        [
+            CTxOut(sum_in - fees, args.addr.to_scriptPubKey()),
+            CTxOut(OP_RETURN, 'FOR TXID' + txid)
+        ],
         args.nLockTime)
 
     ready_to_sign_tx = CTransaction(
