@@ -17,7 +17,7 @@ from bitcoin.core import (
         COutPoint, CTxIn, CTxOut, CTransaction
 )
 from bitcoin.core.script import (
-        OP_NOP2, OP_DROP, OP_CHECKSIG,
+        OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN,
         CScript
 )
 from bitcoin.core.key import CPubKey
