@@ -3,8 +3,7 @@
 import binascii
 import bitcoin.rpc
 from bitcoin.core import (
-        b2x, b2lx, lx, x,
-        str_money_value, COIN,
+        b2x, b2lx, lx, x, COIN,
         COutPoint, CTxIn, CTxOut, CTransaction
 )
 from bitcoin.core.script import (
