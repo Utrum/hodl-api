@@ -2,13 +2,9 @@
 
 import bitcoin.rpc
 from bitcoin.core import (
-        b2x, b2lx, lx, x, COIN,
-        COutPoint, CTxIn, CTxOut, CTransaction
-)
+        b2x, b2lx, lx, x, COIN, COutPoint, CTxIn, CTxOut, CTransaction)
 from bitcoin.core.script import (
-        OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN,
-        CScript
-)
+        OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN, CScript)
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinAddress
 
