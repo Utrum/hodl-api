@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import binascii
 import bitcoin.rpc
 from bitcoin.core import (
         b2x, b2lx, lx, x, COIN,
