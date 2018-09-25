@@ -7,19 +7,9 @@ from bitcoin.core.script import (
         OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN, CScript)
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinAddress
+from conf import CoinParams
 
-
-class KomodoParams(bitcoin.core.CoreMainParams):
-    MESSAGE_START = b'\x24\xe9\x27\x64'
-    DEFAULT_PORT = 7770
-    RPC_PORT = 7771
-    CONF_FILE = "/volumes/assetchains/OOT/OOT.conf"
-    DNS_SEEDS = (('seeds.komodoplatform.com', 'static.kolo.supernet.org'))
-    BASE58_PREFIXES = {'PUBKEY_ADDR': 60,
-                       'SCRIPT_ADDR': 85,
-                       'SECRET_KEY': 188}
-
-bitcoin.params = bitcoin.core.coreparams = KomodoParams()
+bitcoin.params = bitcoin.core.coreparams = CoinParams()
 
 
 def hodl_redeemScript(pubkey, nLockTime):
