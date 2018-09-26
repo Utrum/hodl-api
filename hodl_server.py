@@ -2,6 +2,8 @@
 from flask import Flask, jsonify, abort, make_response
 from flask_restful import Api, Resource, reqparse, fields
 import hodl_api
+import requests
+import json
 
 app = Flask(__name__, static_url_path="")
 api = Api(app)
@@ -25,19 +27,54 @@ class Spend(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
-            'prevouts', action='append', type=str, location='form')
+            'prevouts',
+            action='append',
+            type=str,
+            location='form'
+        )
         super(Spend, self).__init__()
 
     def post(self, pubkey, nlocktime, addr):
         args = self.reqparse.parse_args()
-        print(addr)
-        print(args)
         output = hodl_api.spend_command(
             pubkey=pubkey,
             nLockTime=nlocktime,
             prevOuts=args['prevouts'],
             addr=addr
         )
+        return(output)
+
+    def get(self, pubkey, nlocktime, addr):
+        redeem_script = hodl_api.create_command(
+            pubkey=pubkey,
+            nLockTime=nlocktime
+        )
+        script_addr = redeem_script['address']
+
+        url = hodl_api.CoinParams.EXPLORER
+        url += '/insight-api-komodo/addr/' + script_addr + '/utxo'
+
+        utxos = []
+        try:
+            r = requests.get(
+                url,
+                headers={'Content-type': 'text/plain; charset=utf-8'})
+            utxos = json.loads(r.text)
+        except Exception as e:
+            print("Couldn't connect to " + url, e)
+
+        prevouts = []
+        for utxo in utxos:
+            vout = str(utxo['vout'])
+            prevouts.append(utxo['txid'] + ':' + vout)
+
+        output = hodl_api.spend_command(
+            pubkey=pubkey,
+            nLockTime=nlocktime,
+            prevOuts=prevouts,
+            addr=addr
+        )
+
         return(output)
 
 

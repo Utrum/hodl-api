@@ -4,8 +4,8 @@ class CoinParams(CoreMainParams):
     DEFAULT_PORT = 7770
     RPC_PORT = 7771
     CONF_FILE = "/home/user/OOT/OOT.conf"
+    EXPLORER = "https://explorer.utrum.io"
     DNS_SEEDS = (('seeds.komodoplatform.com', 'static.kolo.supernet.org'))
     BASE58_PREFIXES = {'PUBKEY_ADDR': 60,
                        'SCRIPT_ADDR': 85,
                        'SECRET_KEY': 188}
-
