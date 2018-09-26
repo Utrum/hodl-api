@@ -21,8 +21,7 @@ def create_command(pubkey, nLockTime):
     redeemScript = hodl_redeemScript(pubkey, nLockTime)
 
     addr = P2SHBitcoinAddress.from_redeemScript(redeemScript)
-    print(addr)
-    print(b2x(redeemScript))
+    return({'address': str(addr), 'redeemScript': b2x(redeemScript)})
 
 
 def spend_command(pubkey, nLockTime, prevOuts, addr):
@@ -82,4 +81,4 @@ def spend_command(pubkey, nLockTime, prevOuts, addr):
         unsigned_tx.vout,
         unsigned_tx.nLockTime)
 
-    print(b2x(ready_to_sign_tx.serialize()))
+    return({'redeemTransaction': b2x(ready_to_sign_tx.serialize())})
