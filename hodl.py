@@ -120,7 +120,7 @@ def spend_command(args):
             CTxOut(sum_in - fees, args.addr.to_scriptPubKey()),
             CTxOut(
                 0,
-                CScript([OP_RETURN, ('REWARD SPENT').encode()])
+                CScript([OP_RETURN, ('DEPOSITS UNLOCKED').encode()])
             )
         ],
         args.nLockTime)
