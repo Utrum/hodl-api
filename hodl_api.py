@@ -37,14 +37,14 @@ def spend_command(pubkey, nLockTime, prevOuts, addr):
             n = int(n)
             outpoint = COutPoint(txid, n)
         except ValueError:
-            print('Invalid output: %s' % prevout)
+            raise Exception('Invalid output: %s' % prevout)
         try:
             prevout = proxy.gettxout(outpoint)
         except IndexError:
-            print('Outpoint %s not found' % outpoint)
+            raise Exception('Outpoint %s not found' % outpoint)
         prevout = prevout['txout']
         if prevout.scriptPubKey != scriptPubKey:
-            print('Outpoint not correct scriptPubKey')
+            raise Exception('Outpoint not correct scriptPubKey')
         prevouts.append((outpoint, prevout))
 
     sum_in = sum(prev_txout.nValue for outpoint, prev_txout in prevouts)
