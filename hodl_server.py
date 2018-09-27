@@ -34,17 +34,16 @@ class Spend(Resource):
         )
         super(Spend, self).__init__()
 
-    def post(self, pubkey, nlocktime, addr):
+    def post(self, pubkey, nlocktime):
         args = self.reqparse.parse_args()
         output = hodl_api.spend_command(
             pubkey=pubkey,
             nLockTime=nlocktime,
-            prevOuts=args['prevouts'],
-            addr=addr
+            prevOuts=args['prevouts']
         )
         return(output)
 
-    def get(self, pubkey, nlocktime, addr):
+    def get(self, pubkey, nlocktime):
         redeem_script = hodl_api.create_command(
             pubkey=pubkey,
             nLockTime=nlocktime
@@ -71,14 +70,13 @@ class Spend(Resource):
         output = hodl_api.spend_command(
             pubkey=pubkey,
             nLockTime=nlocktime,
-            prevOuts=prevouts,
-            addr=addr
+            prevOuts=prevouts
         )
         return(output)
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
-api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>/<addr>')
+api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

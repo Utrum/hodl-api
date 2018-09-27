@@ -6,7 +6,8 @@ from bitcoin.core import (
 from bitcoin.core.script import (
         OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN, CScript)
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import P2SHBitcoinAddress, CBitcoinAddress
+from bitcoin.wallet import (
+        P2SHBitcoinAddress, CBitcoinAddress, P2PKHBitcoinAddress)
 from conf import CoinParams
 
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
@@ -19,13 +20,13 @@ def hodl_redeemScript(pubkey, nLockTime):
 
 def create_command(pubkey, nLockTime):
     redeemScript = hodl_redeemScript(pubkey, nLockTime)
-
     addr = P2SHBitcoinAddress.from_redeemScript(redeemScript)
     return({'address': str(addr), 'redeemScript': b2x(redeemScript)})
 
 
-def spend_command(pubkey, nLockTime, prevOuts, addr):
-    address = CBitcoinAddress(addr)
+def spend_command(pubkey, nLockTime, prevOuts):
+    addr = P2PKHBitcoinAddress.from_pubkey(x(pubkey))
+    address = addr
     redeemScript = hodl_redeemScript(pubkey, nLockTime)
     scriptPubKey = redeemScript.to_p2sh_scriptPubKey()
     proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
