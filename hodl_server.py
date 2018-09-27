@@ -74,7 +74,6 @@ class Spend(Resource):
             prevOuts=prevouts,
             addr=addr
         )
-
         return(output)
 
 
