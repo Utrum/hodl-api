@@ -8,7 +8,7 @@ from bitcoin.core.script import (
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import (
         P2SHBitcoinAddress, CBitcoinAddress, P2PKHBitcoinAddress)
-from conf import CoinParams
+from conf.coin import CoinParams
 
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
 
