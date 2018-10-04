@@ -2,12 +2,13 @@
 
 import bitcoin.rpc
 from bitcoin.core import (
-        b2x, b2lx, lx, x, COIN, COutPoint, CTxIn, CTxOut, CTransaction)
+        b2x, b2lx, lx, COIN, COutPoint, CTxIn, CTxOut, CTransaction)
 from bitcoin.core.script import (
         OP_NOP2, OP_DROP, OP_CHECKSIG, OP_RETURN, CScript)
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import (
         P2SHBitcoinAddress, CBitcoinAddress, P2PKHBitcoinAddress)
+from binascii import unhexlify
 from conf.coin import CoinParams
 
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
@@ -83,3 +84,61 @@ def spend_command(pubkey, nLockTime, prevOuts):
         unsigned_tx.nLockTime)
 
     return({'redeemTransaction': b2x(ready_to_sign_tx.serialize())})
+
+
+def analyze_tx(tx_hex_string):
+    output = {}
+
+    # get op_return from transaction
+    hex = unhexlify(tx_hex_string)
+    deserializedTransaction = CTransaction.deserialize(hex)
+    op_return_vout = deserializedTransaction.vout[1].scriptPubKey
+
+    # get redeem script
+    redeem_script = ''
+    for i in op_return_vout:
+        script = bytes(i).decode('utf8')
+        if 'REDEEM' in script:
+            redeem_script_string = script.replace('REDEEM SCRIPT ', '')
+    output['redeemScript'] = redeem_script_string
+
+    # redeem script into list
+    redeemScript = CScript(unhexlify(redeem_script_string))
+    redeem_script_array = []
+    for i in redeemScript:
+        redeem_script_array.append(i)
+
+    # get nlocktime from redeem script
+    nlocktime_hex = b2lx(redeem_script_array[0])
+    nlocktime = int(nlocktime_hex, 16)
+    output['nLockTime'] = nlocktime
+
+    # get authorized key from redeem script
+    pubkey = b2x(redeem_script_array[3])
+    output['publicKey'] = pubkey
+
+    # get address from authorized key
+    pubkey = unhexlify(pubkey)
+    P2PKHBitcoinAddress = bitcoin.wallet.P2PKHBitcoinAddress
+    addr = P2PKHBitcoinAddress.from_pubkey(pubkey)
+    output['authorizedAddress'] = str(addr)
+
+    # get total sent to hodl address
+    amount_locked = 0
+    for i in deserializedTransaction.vout:
+        if i.nValue > 0:
+            sPK = i.scriptPubKey
+            amount = i.nValue
+            try:
+                p2sh_addr = P2SHBitcoinAddress.from_scriptPubKey(sPK)
+                print(p2sh_addr)
+                amount_locked += amount
+            except: pass
+    output["lockedSatoshis"] = amount_locked
+
+    return(output)
+
+
+if __name__ == '__main__':
+    output = analyze_tx('010000000195872154854064bf78e6fca1f43b67aac4aa95f440f56373e5e02fdcfa4c64c4020000006a473044022000aaae1500a73d4ecdb466e147363ca2ec5a3eb886ab4f9dca383498944f91cf02206fb0100db280cbd83e6769d7cf6dedd30b33e2f818fffe9e1a277c84d51e43300121030efdba03bfd0a6183fa9bf0d0309f0f268b2ad71ba2805c2b735e423af7d3804ffffffff0340420f000000000017a914a09cdcaacedee8a8813fee25185c8ed1b1b06d87870000000000000000656a4c6252454445454d2053435249505420303439663263303235636231373532313033306566646261303362666430613631383366613962663064303330396630663236386232616437316261323830356332623733356534323361663764333830346163a05eba05000000001976a914e33115988e5b84d5a5d5dfb633bc6ef46715282388ac00000000')
+    print(output)
