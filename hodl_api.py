@@ -102,11 +102,14 @@ def analyze_tx(tx_hex_string):
             redeem_script_string = script.replace('REDEEM SCRIPT ', '')
     output['redeemScript'] = redeem_script_string
 
-    # redeem script into list
+    # convert redeem script into list
     redeemScript = CScript(unhexlify(redeem_script_string))
     redeem_script_array = []
     for i in redeemScript:
         redeem_script_array.append(i)
+
+    # get redeem script hash (hodl address)
+    p2sh_address = P2SHBitcoinAddress.from_redeemScript(redeemScript)
 
     # get nlocktime from redeem script
     nlocktime_hex = b2lx(redeem_script_array[0])
@@ -124,17 +127,17 @@ def analyze_tx(tx_hex_string):
     output['authorizedAddress'] = str(addr)
 
     # get total sent to hodl address
-    amount_locked = 0
+    locked_satoshis = 0
     for i in deserializedTransaction.vout:
         if i.nValue > 0:
             sPK = i.scriptPubKey
             amount = i.nValue
             try:
-                p2sh_addr = P2SHBitcoinAddress.from_scriptPubKey(sPK)
-                print(p2sh_addr)
-                amount_locked += amount
+                vout_p2sh_addr = P2SHBitcoinAddress.from_scriptPubKey(sPK)
+                if str(p2sh_address) == str(vout_p2sh_addr):
+                    locked_satoshis += amount
             except: pass
-    output["lockedSatoshis"] = amount_locked
+    output["lockedSatoshis"] = locked_satoshis
 
     return(output)
 
