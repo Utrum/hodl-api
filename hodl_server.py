@@ -5,6 +5,10 @@ import hodl_api
 import requests
 import json
 
+MIN_AMOUNT = 0.01
+MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
+
+
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
@@ -75,8 +79,34 @@ class Spend(Resource):
         return(output)
 
 
+class SubmitTx(Resource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('rawtx', type=str, location='headers')
+        super(SubmitTx, self).__init__()
+
+    def post(self):
+        args = self.reqparse.parse_args()
+
+        # analyze transaction
+        try:
+            analysis = hodl_api.analyze_tx(args['rawtx'])
+        except Exception as e:
+            error_msg = "couldn't analyze this transaction"
+            return({'error': error_msg})
+
+        # check if it complies with minimum locked amount condition
+        if analysis['lockedSatoshis'] < MIN_AMOUNT_SAT:
+            error_msg = 'minimum amount is ' + str(MIN_AMOUNT)
+            return({'error': error_msg})
+
+        return(analysis)
+
+
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
+api.add_resource(SubmitTx, '/submit-tx/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
