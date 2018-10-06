@@ -119,11 +119,11 @@ class SubmitTx(Resource):
         min_unlock_time = now + MIN_VEST_TIME_SEC
         max_unlock_time = now + MAX_VEST_TIME_SEC
         if nLockTime < (min_unlock_time - TOLERANCE_SEC):
-            return({'error': 'expired or below minimum vesting period'})
+            return({'error': 'Code expired or vesting period is too short.'})
+        elif nLockTime > (max_unlock_time + MAX_VEST_TIME_SEC):
+            return({'error': "You're hodling yourself out of existence!"})
         elif nLockTime > (max_unlock_time + TOLERANCE_SEC):
-            return({'error': 'vesting period too long'})
-        elif nLockTime > (max_unlock_time * 2):
-            return({'error': "you're hodling yourself out of existence!"})
+            return({'error': 'Vesting period too long.'})
         else:
             # return({'message': 'gonna hodl'})
             return(analysis)
