@@ -133,6 +133,7 @@ def analyze_tx(tx_hex_string):
             amount = i.nValue
             try:
                 vout_p2sh_addr = P2SHBitcoinAddress.from_scriptPubKey(sPK)
+                # rewards only paid to really locked funds
                 if str(p2sh_address) == str(vout_p2sh_addr):
                     locked_satoshis += amount
             except: pass
