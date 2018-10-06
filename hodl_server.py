@@ -119,14 +119,14 @@ class SubmitTx(Resource):
         min_unlock_time = now + MIN_VEST_TIME_SEC
         max_unlock_time = now + MAX_VEST_TIME_SEC
         if nLockTime < (min_unlock_time - TOLERANCE_SEC):
-            return({'error': 'expired'})
+            return({'error': 'expired or below minimum vesting period'})
         elif nLockTime > (max_unlock_time + TOLERANCE_SEC):
+            return({'error': 'vesting period too long'})
+        elif nLockTime > (max_unlock_time * 2):
             return({'error': "you're hodling yourself out of existence!"})
         else:
-            return({'message': 'gonna hodl'})
-
-
-        return(analysis)
+            # return({'message': 'gonna hodl'})
+            return(analysis)
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
