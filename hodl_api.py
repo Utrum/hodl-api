@@ -14,6 +14,25 @@ from conf.coin import CoinParams
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
 
 
+def tx_broadcast(rawtx):
+    url = CoinParams.EXPLORER
+    url += '/insight-api-komodo/tx/send'
+    try:
+        r = requests.post(
+            url,
+            headers = {'Content-type': 'application/json;charset=UTF-8'},
+            json = {"rawtx": str(rawtx)}
+        )
+        try:
+            explorer_output = json.loads(r.text)
+        except:
+            error_msg = r.text
+        return(explorer_output)
+    except Exception as e:
+        print("Error trying to send transaction to " + url, error_msg)
+        return({'error': error_msg})
+
+
 def hodl_redeemScript(pubkey, nLockTime):
     publicKey = CPubKey(x(pubkey))
     return CScript([nLockTime, OP_NOP2, OP_DROP, publicKey, OP_CHECKSIG])

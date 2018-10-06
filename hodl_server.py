@@ -24,25 +24,6 @@ app = Flask(__name__, static_url_path="")
 api = Api(app)
 
 
-def tx_broadcast(rawtx):
-    url = hodl_api.CoinParams.EXPLORER
-    url += '/insight-api-komodo/tx/send'
-    try:
-        r = requests.post(
-            url,
-            headers = {'Content-type': 'application/json;charset=UTF-8'},
-            json = {"rawtx": str(rawtx)}
-        )
-        try:
-            explorer_output = json.loads(r.text)
-        except:
-            error_msg = r.text
-        return(explorer_output)
-    except Exception as e:
-        print("Error trying to send transaction to " + url, error_msg)
-        return({'error': error_msg})
-
-
 class Create(Resource):
 
     def __init__(self):
