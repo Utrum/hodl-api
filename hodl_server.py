@@ -129,9 +129,10 @@ class SubmitTx(Resource):
             return({'error': error_msg})
         else:
             try:
-                tx_broadcast_output = tx_broadcast(args['rawtx'])
+                tx_broadcast_output = hodl_api.tx_broadcast(args['rawtx'])
                 return(tx_broadcast_output)
-            except:
+            except Exception as e:
+                print(e)
                 error_msg = ("There was a problem " +
                     "broadcasting this transaction.")
                 return({'error': error_msg})

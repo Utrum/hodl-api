@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import requests, json
 import bitcoin.rpc
 from bitcoin.core import (
         b2x, b2lx, x, lx, COIN, COutPoint, CTxIn, CTxOut, CTransaction)
@@ -25,11 +26,13 @@ def tx_broadcast(rawtx):
         )
         try:
             explorer_output = json.loads(r.text)
+            return(explorer_output)
         except:
             error_msg = r.text
-        return(explorer_output)
+            return({'error': error_msg})
     except Exception as e:
-        print("Error trying to send transaction to " + url, error_msg)
+        print("Error trying to send transaction to " + url)
+        error_msg = str(e)
         return({'error': error_msg})
 
 
