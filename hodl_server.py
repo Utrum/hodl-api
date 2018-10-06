@@ -24,6 +24,25 @@ app = Flask(__name__, static_url_path="")
 api = Api(app)
 
 
+def tx_broadcast(rawtx):
+    url = hodl_api.CoinParams.EXPLORER
+    url += '/insight-api-komodo/tx/send'
+    try:
+        r = requests.post(
+            url,
+            headers = {'Content-type': 'application/json;charset=UTF-8'},
+            json = {"rawtx": str(rawtx)}
+        )
+        try:
+            explorer_output = json.loads(r.text)
+        except:
+            error_msg = r.text
+        return(explorer_output)
+    except Exception as e:
+        print("Error trying to send transaction to " + url, error_msg)
+        return({'error': error_msg})
+
+
 class Create(Resource):
 
     def __init__(self):
@@ -113,20 +132,28 @@ class SubmitTx(Resource):
             return({'error': error_msg})
 
         # check if tx is not trying to get rewards for less than
-        # the minimum allowed vesting period
+        # the minimum allowed vesting period, or more than maximum
         nLockTime = analysis['nLockTime']
         now = int(time.time())
         min_unlock_time = now + MIN_VEST_TIME_SEC
         max_unlock_time = now + MAX_VEST_TIME_SEC
         if nLockTime < (min_unlock_time - TOLERANCE_SEC):
-            return({'error': 'Code expired or vesting period is too short.'})
+            error_msg = 'Code expired or vesting period is too short.'
+            return({'error': error_msg})
         elif nLockTime > (max_unlock_time + MAX_VEST_TIME_SEC):
-            return({'error': "You're hodling yourself out of existence!"})
+            error_msg = "You're hodling yourself out of existence!"
+            return({'error': error_msg})
         elif nLockTime > (max_unlock_time + TOLERANCE_SEC):
-            return({'error': 'Vesting period too long.'})
+            error_msg = 'Vesting period too long.'
+            return({'error': error_msg})
         else:
-            # return({'message': 'gonna hodl'})
-            return(analysis)
+            try:
+                tx_broadcast_output = tx_broadcast(args['rawtx'])
+                return(tx_broadcast_output)
+            except:
+                error_msg = ("There was a problem " +
+                    "broadcasting this transaction.")
+                return({'error': error_msg})
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')

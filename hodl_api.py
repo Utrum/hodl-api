@@ -110,6 +110,7 @@ def analyze_tx(tx_hex_string):
 
     # get redeem script hash (hodl address)
     p2sh_address = P2SHBitcoinAddress.from_redeemScript(redeemScript)
+    output['hodlAddress'] = str(p2sh_address)
 
     # get nlocktime from redeem script
     nlocktime_hex = b2lx(redeem_script_array[0])
