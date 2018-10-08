@@ -94,7 +94,7 @@ class SubmitTx(Resource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('rawtx', type=str, location='headers')
+        self.reqparse.add_argument('rawtx', type=str, location='json')
         super(SubmitTx, self).__init__()
 
     def post(self):
@@ -105,7 +105,7 @@ class SubmitTx(Resource):
             analysis = hodl_api.analyze_tx(args['rawtx'])
         except Exception as e:
             error_msg = "couldn't analyze this transaction"
-            return({'error': error_msg})
+            return({'error': error_msg, 'exception': str(e)})
 
         # check if it complies with minimum allowed locked amount
         if analysis['lockedSatoshis'] < MIN_AMOUNT_SAT:
