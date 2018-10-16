@@ -97,10 +97,11 @@ def spend_command(pubkey, nLockTime, prevOuts):
         nLockTime)
 
     ready_to_sign_tx = CTransaction(
-        [CTxIn(
-            txin.prevout,
-            redeemScript,
-            nSequence=0)
+        [
+            CTxIn(
+                txin.prevout,
+                redeemScript,
+                nSequence=0)
             for i, txin in enumerate(unsigned_tx.vin)],
         unsigned_tx.vout,
         unsigned_tx.nLockTime)
