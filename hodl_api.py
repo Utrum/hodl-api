@@ -86,7 +86,7 @@ def spend_command(pubkey, nLockTime, prevOuts):
     fees = int(tx_size / 1000 * feerate)
 
     unsigned_tx = CTransaction(
-        [CTxIn(outpoint, nSequence=0) for outpoint, prevout in prevouts],
+        [CTxIn(outpoint, redeemScript, nSequence=0) for outpoint, prevout in prevouts],
         [
             CTxOut(sum_in - fees, address.to_scriptPubKey()),
             CTxOut(
@@ -96,17 +96,7 @@ def spend_command(pubkey, nLockTime, prevOuts):
         ],
         nLockTime)
 
-    ready_to_sign_tx = CTransaction(
-        [
-            CTxIn(
-                txin.prevout,
-                redeemScript,
-                nSequence=0)
-            for i, txin in enumerate(unsigned_tx.vin)],
-        unsigned_tx.vout,
-        unsigned_tx.nLockTime)
-
-    return({'redeemTransaction': b2x(ready_to_sign_tx.serialize())})
+    return({'redeemTransaction': b2x(unsigned_tx.serialize())})
 
 
 def analyze_tx(tx_hex_string):
