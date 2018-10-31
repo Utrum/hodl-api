@@ -5,7 +5,9 @@ import hodl_api
 import requests
 import json
 import time
+from collections import deque
 
+import random
 
 # MIN_AMOUNT = 100
 MIN_AMOUNT = 0.01  # TESTING!
@@ -23,6 +25,7 @@ MIN_VEST_TIME_SEC = 900 # TESTING!
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
+tx_queue = deque()
 
 class Create(Resource):
 
@@ -130,17 +133,43 @@ class SubmitTx(Resource):
         else:
             try:
                 tx_broadcast_output = hodl_api.tx_broadcast(args['rawtx'])
-                return(tx_broadcast_output)
             except Exception as e:
                 print(e)
                 error_msg = ("There was a problem " +
                     "broadcasting this transaction.")
                 return({'error': error_msg})
+            else:
+                append_val = {}
 
+                at = hodl_api.analyze_tx(args['rawtx'])
+                append_val['address'] = at['authorizedAddress']
+                append_val['rewards'] = 0
+                append_val['redeemScript'] = at['redeemScript']
+                tx_queue.append(append_val)
+
+                return(tx_broadcast_output)
+
+
+class Proccess(Resource):
+    def __init__(self):
+        super(Proccess, self).__init__()
+
+    def post(self):
+        params = {}
+        for tx in tx_queue:
+            params[tx['address']] = tx['rewards']
+
+        # todo:
+        # create call to rpc proxy for sendmany, pass params containing addresses and reward amounts
+        # after successful tx, empty tx_queue
+        
+        # returning params as temp return for now
+        return params
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
+api.add_resource(Proccess, '/process/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
