@@ -26,6 +26,7 @@ app = Flask(__name__, static_url_path="")
 api = Api(app)
 
 tx_queue = deque()
+total = 0
 
 class Create(Resource):
 
@@ -143,9 +144,12 @@ class SubmitTx(Resource):
 
                 at = hodl_api.analyze_tx(args['rawtx'])
                 append_val['address'] = at['authorizedAddress']
-                append_val['rewards'] = 0
+                append_val['rewards'] = 0.00100000
                 append_val['redeemScript'] = at['redeemScript']
                 tx_queue.append(append_val)
+
+                global total
+                total += at['lockedSatoshis']
 
                 return(tx_broadcast_output)
 
@@ -153,6 +157,13 @@ class SubmitTx(Resource):
 class Proccess(Resource):
     def __init__(self):
         super(Proccess, self).__init__()
+
+    def findunspent(self):
+        unspent = hodl_api.find_unspent()
+        for tx in unspent:
+            if tx['spendable'] == True:
+                if tx['amount'] > total:
+                    return str(tx['address'])
 
     def post(self):
         params = {}
@@ -162,9 +173,12 @@ class Proccess(Resource):
         # todo:
         # create call to rpc proxy for sendmany, pass params containing addresses and reward amounts
         # after successful tx, empty tx_queue
-        
+        address = self.findunspent()
+        txid = hodl_api.sendmany_command(address, params)
+
         # returning params as temp return for now
-        return params
+        return({'txid': txid})
+        # return params
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
