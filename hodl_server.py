@@ -7,7 +7,6 @@ import json
 import time
 from collections import deque
 
-import random
 
 # MIN_AMOUNT = 100
 MIN_AMOUNT = 0.01  # TESTING!
@@ -22,11 +21,12 @@ MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
 MAX_VEST_TIME_SEC = 1800 # TESTING!
 MIN_VEST_TIME_SEC = 900 # TESTING!
 
+REWARD_RATIO = 0.0083
+
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
 tx_queue = deque()
-total = 0
 
 class Create(Resource):
 
@@ -143,13 +143,10 @@ class SubmitTx(Resource):
                 append_val = {}
 
                 at = hodl_api.analyze_tx(args['rawtx'])
-                append_val['address'] = at['authorizedAddress']
-                append_val['rewards'] = 100000
+                append_val['address'] = at['hodlAddress']
+                append_val['rewards'] = at['lockedSatoshis'] * REWARD_RATIO
                 append_val['redeemScript'] = at['redeemScript']
                 tx_queue.append(append_val)
-
-                global total
-                total += at['lockedSatoshis']
 
                 return(tx_broadcast_output)
 
@@ -163,7 +160,7 @@ class Proccess(Resource):
         for tx in tx_queue:
             params[tx['address']] = tx['rewards']
         tx_queue.clear()
-        
+
         results = hodl_api.sendmany_command(params)
         return({"txid":results})
 
