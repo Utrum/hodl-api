@@ -46,18 +46,10 @@ def create_command(pubkey, nLockTime):
     addr = P2SHBitcoinAddress.from_redeemScript(redeemScript)
     return({'address': str(addr), 'redeemScript': b2x(redeemScript)})
 
-def find_unspent():
+def sendmany_command(payments):
     proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
-    return(proxy.listunspent())
-
-def sendmany_command(address, payments):
-    proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
-    opid = proxy.sendmany(address, payments)
-    t = opid.hex()
-    print(t)
-    response_arr = proxy.call('z_getoperationresult', [t])
-    print(response_arr)
-    return response_arr
+    txid = lx(proxy.sendmany("", payments).hex()).hex()
+    return(txid)
 
 def spend_command(pubkey, nLockTime, prevOuts):
     addr = P2PKHBitcoinAddress.from_pubkey(x(pubkey))

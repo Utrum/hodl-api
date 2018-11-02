@@ -158,27 +158,14 @@ class Proccess(Resource):
     def __init__(self):
         super(Proccess, self).__init__()
 
-    def findunspent(self):
-        unspent = hodl_api.find_unspent()
-        for tx in unspent:
-            if tx['spendable'] == True:
-                if tx['amount'] > total:
-                    return str(tx['address'])
-
     def post(self):
         params = {}
         for tx in tx_queue:
             params[tx['address']] = tx['rewards']
-
-        # todo:
-        # create call to rpc proxy for sendmany, pass params containing addresses and reward amounts
-        # after successful tx, empty tx_queue
-        address = self.findunspent()
-        results = hodl_api.sendmany_command(address, params)
-
-        # returning params as temp return for now
-        return(results)
-        # return params
+        tx_queue.clear()
+        
+        results = hodl_api.sendmany_command(params)
+        return({"txid":results})
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
