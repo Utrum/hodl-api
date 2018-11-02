@@ -144,7 +144,7 @@ class SubmitTx(Resource):
 
                 at = hodl_api.analyze_tx(args['rawtx'])
                 append_val['address'] = at['authorizedAddress']
-                append_val['rewards'] = 0.00100000
+                append_val['rewards'] = 100000
                 append_val['redeemScript'] = at['redeemScript']
                 tx_queue.append(append_val)
 
@@ -174,10 +174,10 @@ class Proccess(Resource):
         # create call to rpc proxy for sendmany, pass params containing addresses and reward amounts
         # after successful tx, empty tx_queue
         address = self.findunspent()
-        txid = hodl_api.sendmany_command(address, params)
+        results = hodl_api.sendmany_command(address, params)
 
         # returning params as temp return for now
-        return({'txid': txid})
+        return(results)
         # return params
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')

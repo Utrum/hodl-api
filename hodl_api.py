@@ -52,8 +52,12 @@ def find_unspent():
 
 def sendmany_command(address, payments):
     proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
-    txid = proxy.sendmany(address, payments)
-    return txid
+    opid = proxy.sendmany(address, payments)
+    t = opid.hex()
+    print(t)
+    response_arr = proxy.call('z_getoperationresult', [t])
+    print(response_arr)
+    return response_arr
 
 def spend_command(pubkey, nLockTime, prevOuts):
     addr = P2PKHBitcoinAddress.from_pubkey(x(pubkey))
