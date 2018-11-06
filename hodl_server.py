@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask, jsonify, abort, make_response
+from flask import Flask, jsonify, abort, make_response, request, abort
 from flask_restful import Api, Resource, reqparse, fields
 import hodl_api
 import requests
@@ -134,6 +134,8 @@ class SubmitTx(Resource):
         else:
             try:
                 tx_broadcast_output = hodl_api.tx_broadcast(args['rawtx'])
+                if 'error' in tx_broadcast_output:
+                    raise Exception("something wrong!")
             except Exception as e:
                 print(e)
                 error_msg = ("There was a problem " +
@@ -155,14 +157,23 @@ class Proccess(Resource):
     def __init__(self):
         super(Proccess, self).__init__()
 
+    @app.before_request
+    def limit_remote_request():
+        if request.remote_addr != '127.0.0.1':
+            abort(403)
+
     def post(self):
         params = {}
         for tx in tx_queue:
             params[tx['address']] = tx['rewards']
         tx_queue.clear()
 
-        results = hodl_api.sendmany_command(params)
-        return({"txid":results})
+        try:
+            results = hodl_api.sendmany_command(params)
+            return({"txid":results})
+        except Exception as e:
+            return({'error': e.error['message']})
+
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
