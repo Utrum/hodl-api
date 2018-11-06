@@ -87,14 +87,7 @@ def spend_command(pubkey, nLockTime, prevOuts):
 
     unsigned_tx = CTransaction(
         [CTxIn(outpoint, redeemScript, nSequence=0) for outpoint, prevout in prevouts],
-        [
-            #CTxOut(sum_in - fees, address.to_scriptPubKey()),
-            CTxOut(sum_in - fees, address.to_scriptPubKey())
-            #CTxOut(
-            #    0,
-            #    CScript([OP_RETURN, ('DEPOSITS UNLOCKED').encode()])
-            #)
-        ],
+        [CTxOut(sum_in - fees, address.to_scriptPubKey())],
         nLockTime)
 
     return({'redeemTransaction': b2x(unsigned_tx.serialize())})
