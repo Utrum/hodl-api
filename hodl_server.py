@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-from flask import Flask, jsonify, abort, make_response
+from flask import Flask, jsonify, abort, make_response, request, abort
 from flask_restful import Api, Resource, reqparse, fields
 import hodl_api
 import requests
 import json
 import time
+from collections import deque
 
 
 # MIN_AMOUNT = 100
@@ -20,9 +21,12 @@ MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
 MAX_VEST_TIME_SEC = 1800 # TESTING!
 MIN_VEST_TIME_SEC = 900 # TESTING!
 
+REWARD_RATIO = 0.0083
+
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
+tx_queue = deque()
 
 class Create(Resource):
 
@@ -130,17 +134,51 @@ class SubmitTx(Resource):
         else:
             try:
                 tx_broadcast_output = hodl_api.tx_broadcast(args['rawtx'])
-                return(tx_broadcast_output)
+                if 'error' in tx_broadcast_output:
+                    raise Exception("something wrong!")
             except Exception as e:
                 print(e)
                 error_msg = ("There was a problem " +
                     "broadcasting this transaction.")
                 return({'error': error_msg})
+            else:
+                append_val = {}
+
+                at = hodl_api.analyze_tx(args['rawtx'])
+                append_val['address'] = at['hodlAddress']
+                append_val['rewards'] = at['lockedSatoshis'] * REWARD_RATIO
+                append_val['redeemScript'] = at['redeemScript']
+                tx_queue.append(append_val)
+
+                return(tx_broadcast_output)
+
+
+class Proccess(Resource):
+    def __init__(self):
+        super(Proccess, self).__init__()
+
+    @app.before_request
+    def limit_remote_request():
+        if request.remote_addr != '127.0.0.1':
+            abort(403)
+
+    def post(self):
+        params = {}
+        for tx in tx_queue:
+            params[tx['address']] = tx['rewards']
+        tx_queue.clear()
+
+        try:
+            results = hodl_api.sendmany_command(params)
+            return({"txid":results})
+        except Exception as e:
+            return({'error': e.error['message']})
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
+api.add_resource(Proccess, '/process/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
