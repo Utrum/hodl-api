@@ -157,17 +157,13 @@ class Proccess(Resource):
     def __init__(self):
         super(Proccess, self).__init__()
 
-    @app.before_request
-    def limit_remote_request():
+    def get(self):
         if request.remote_addr != '127.0.0.1':
             abort(403)
-
-    def post(self):
         params = {}
         for tx in tx_queue:
             params[tx['address']] = tx['rewards']
         tx_queue.clear()
-
         try:
             results = hodl_api.sendmany_command(params)
             return({"txid":results})
