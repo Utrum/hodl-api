@@ -153,9 +153,9 @@ class SubmitTx(Resource):
                 return(tx_broadcast_output)
 
 
-class Proccess(Resource):
+class ProcessRewards(Resource):
     def __init__(self):
-        super(Proccess, self).__init__()
+        super(ProcessRewards, self).__init__()
 
     def get(self):
         if request.remote_addr != '127.0.0.1':
@@ -174,7 +174,7 @@ class Proccess(Resource):
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
-api.add_resource(Proccess, '/process/')
+api.add_resource(ProcessRewards, '/process-rewards/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
