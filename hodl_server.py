@@ -5,7 +5,7 @@ import hodl_api
 import requests
 import json
 import time
-from mq import add_payee
+from mq import add_payee, send_process_queues_signal
 
 
 # MIN_AMOUNT = 100
@@ -145,9 +145,8 @@ class SubmitTx(Resource):
                     payee_data = {}
                     payee_data['hodlFundTxId'] = tx_broadcast_output['txid']
                     payee_data['payeeAddress'] = analysis['hodlAddress']
-                    payee_data['rewards'] = int(
+                    payee_data['reward'] = int(
                         analysis['lockedSatoshis'] * REWARD_RATIO)
-                    payee_data['redeemScript'] = analysis['redeemScript']
                     add_payee(payee_data)
                 except Exception as e:
                     print(e)
@@ -158,10 +157,26 @@ class SubmitTx(Resource):
                 return(tx_broadcast_output)
 
 
+class ProcessRewards(Resource):
+    def __init__(self):
+        super(ProcessRewards, self).__init__()
+
+    def get(self):
+        if request.remote_addr != '127.0.0.1':
+            abort(403)
+        try:
+            result = send_process_queues_signal()
+            return({"result": "success"})
+        except Exception as e:
+            print(e)
+            return({"result": "failure"})
+
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
+api.add_resource(ProcessRewards, '/process-rewards/')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
