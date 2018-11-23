@@ -5,7 +5,7 @@ import hodl_api
 import requests
 import json
 import time
-from mq import add_payee, send_process_queues_signal
+from mq import to_queue, send_process_queues_signal
 
 
 # MIN_AMOUNT = 100
@@ -147,7 +147,7 @@ class SubmitTx(Resource):
                     payee_data['payeeAddress'] = analysis['hodlAddress']
                     payee_data['reward'] = int(
                         analysis['lockedSatoshis'] * REWARD_RATIO)
-                    add_payee(payee_data, 'transactions')
+                    to_queue(payee_data, 'transactions')
                 except Exception as e:
                     print(e)
                     error_msg = ("There was a problem " +

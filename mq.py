@@ -1,12 +1,13 @@
 import pika
 import json
+from conf.mq import mqhost
 
 
 def send_process_queues_signal():
     q = 'process_queues_signal'
     msg = '{"process": true}'
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost'))
+        pika.ConnectionParameters(host=mqhost))
     channel = connection.channel()
     channel.queue_declare(
         queue=q,
@@ -18,11 +19,11 @@ def send_process_queues_signal():
         properties=pika.BasicProperties(delivery_mode=2))
 
 
-def add_payee(msg, q):
+def to_queue(msg, q):
     json_msg = json.dumps(msg)
     msg = json_msg
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost'))
+        pika.ConnectionParameters(host=mqhost))
     channel = connection.channel()
     channel.queue_declare(
         queue=q,
