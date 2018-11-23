@@ -1,5 +1,6 @@
 conf.py
 conf/coin.py
+conf/mq.py
 conf/*.conf
 docker/prod_start_docker.sh
 .virtualenv
