@@ -147,7 +147,7 @@ class SubmitTx(Resource):
                     payee_data['payeeAddress'] = analysis['hodlAddress']
                     payee_data['reward'] = int(
                         analysis['lockedSatoshis'] * REWARD_RATIO)
-                    add_payee(payee_data)
+                    add_payee(payee_data, 'transactions')
                 except Exception as e:
                     print(e)
                     error_msg = ("There was a problem " +

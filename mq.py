@@ -18,11 +18,9 @@ def send_process_queues_signal():
         properties=pika.BasicProperties(delivery_mode=2))
 
 
-def add_payee(msg):
+def add_payee(msg, q):
     json_msg = json.dumps(msg)
     msg = json_msg
-    print(msg)
-    q = 'unconfirmed'
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
