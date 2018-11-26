@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from flask import Flask, jsonify, abort, make_response, request, abort
+from flask import Flask, jsonify, abort, make_response
 from flask_restful import Api, Resource, reqparse, fields
 import hodl_api
 import requests
 import json
 import time
-from mq import to_queue, send_process_queues_signal
 
 
 # MIN_AMOUNT = 100
@@ -20,8 +19,6 @@ MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
 # MIN_VEST_TIME_SEC = MIN_VEST_TIME * 86400
 MAX_VEST_TIME_SEC = 1800 # TESTING!
 MIN_VEST_TIME_SEC = 900 # TESTING!
-
-REWARD_RATIO = 0.0083
 
 app = Flask(__name__, static_url_path="")
 api = Api(app)
@@ -133,50 +130,17 @@ class SubmitTx(Resource):
         else:
             try:
                 tx_broadcast_output = hodl_api.tx_broadcast(args['rawtx'])
-                if 'error' in tx_broadcast_output:
-                    raise Exception("something wrong!")
+                return(tx_broadcast_output)
             except Exception as e:
                 print(e)
                 error_msg = ("There was a problem " +
                     "broadcasting this transaction.")
                 return({'error': error_msg})
-            else:
-                try:
-                    payee_data = {}
-                    payee_data['hodlFundTxId'] = tx_broadcast_output['txid']
-                    payee_data['payeeAddress'] = analysis['hodlAddress']
-                    payee_data['reward'] = int(
-                        analysis['lockedSatoshis'] * REWARD_RATIO)
-                    to_queue(payee_data, 'transactions')
-                except Exception as e:
-                    print(e)
-                    error_msg = ("There was a problem " +
-                        "scheduling reward payment, please report.")
-                    return({'error': error_msg})
-
-                return(tx_broadcast_output)
-
-
-class ProcessRewards(Resource):
-    def __init__(self):
-        super(ProcessRewards, self).__init__()
-
-    def get(self):
-        if request.remote_addr != '127.0.0.1':
-            abort(403)
-        try:
-            result = send_process_queues_signal()
-            return({"result": "success"})
-        except Exception as e:
-            print(e)
-            return({"result": "failure"})
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
-api.add_resource(ProcessRewards, '/process-rewards/')
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
