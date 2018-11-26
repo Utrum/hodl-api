@@ -47,12 +47,6 @@ def create_command(pubkey, nLockTime):
     return({'address': str(addr), 'redeemScript': b2x(redeemScript)})
 
 
-def sendmany_command(payments):
-    proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
-    txid = lx(proxy.sendmany("", payments).hex()).hex()
-    return(txid)
-
-
 def spend_command(pubkey, nLockTime, prevOuts):
     addr = P2PKHBitcoinAddress.from_pubkey(x(pubkey))
     address = addr
