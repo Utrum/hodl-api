@@ -5,7 +5,7 @@ import hodl_api
 import requests
 import json
 import time
-from collections import deque
+from mq import to_queue, send_process_queues_signal
 
 
 # MIN_AMOUNT = 100
@@ -26,7 +26,6 @@ REWARD_RATIO = 0.0083
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
-tx_queue = deque()
 
 class Create(Resource):
 
@@ -142,13 +141,18 @@ class SubmitTx(Resource):
                     "broadcasting this transaction.")
                 return({'error': error_msg})
             else:
-                append_val = {}
-
-                at = hodl_api.analyze_tx(args['rawtx'])
-                append_val['address'] = at['hodlAddress']
-                append_val['rewards'] = at['lockedSatoshis'] * REWARD_RATIO
-                append_val['redeemScript'] = at['redeemScript']
-                tx_queue.append(append_val)
+                try:
+                    payee_data = {}
+                    payee_data['hodlFundTxId'] = tx_broadcast_output['txid']
+                    payee_data['payeeAddress'] = analysis['hodlAddress']
+                    payee_data['reward'] = int(
+                        analysis['lockedSatoshis'] * REWARD_RATIO)
+                    to_queue(payee_data, 'transactions')
+                except Exception as e:
+                    print(e)
+                    error_msg = ("There was a problem " +
+                        "scheduling reward payment, please report.")
+                    return({'error': error_msg})
 
                 return(tx_broadcast_output)
 
@@ -160,21 +164,19 @@ class ProcessRewards(Resource):
     def get(self):
         if request.remote_addr != '127.0.0.1':
             abort(403)
-        params = {}
-        for tx in tx_queue:
-            params[tx['address']] = tx['rewards']
-        tx_queue.clear()
         try:
-            results = hodl_api.sendmany_command(params)
-            return({"txid":results})
+            result = send_process_queues_signal()
+            return({"result": "success"})
         except Exception as e:
-            return({'error': e.error['message']})
+            print(e)
+            return({"result": "failure"})
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
 api.add_resource(ProcessRewards, '/process-rewards/')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
