@@ -2,9 +2,9 @@ FROM ubuntu:16.04
 
 RUN apt update && apt -y install python3-pip git
 
-RUN pip3 install flask-restful requests gunicorn python-bitcoinlib
+RUN pip3 install flask-restful requests gunicorn python-bitcoinlib pika
 
-LABEL version="20181107b"
+LABEL version="20181107c"
 RUN git clone https://github.com/Utrum/hodl-api.git \
   && cd hodl-api \
   && git checkout dev
