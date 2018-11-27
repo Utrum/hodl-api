@@ -24,7 +24,7 @@ MAX_AMOUNT_SAT = MAX_AMOUNT * 100000000
 MAX_VEST_TIME_SEC = 1800 # TESTING!
 MIN_VEST_TIME_SEC = 900 # TESTING!
 
-REWARD_RATIO = 0.0083
+REWARD_RATIO = 0.00834
 
 app = Flask(__name__, static_url_path="")
 api = Api(app)
