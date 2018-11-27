@@ -10,12 +10,15 @@ from mq import to_queue, send_process_queues_signal
 
 # MIN_AMOUNT = 100
 MIN_AMOUNT = 0.01  # TESTING!
+# MAX_AMOUNT = 100000
+MAX_AMOUNT = 1000  # TESTING!
 # TOLERANCE_SEC = 43200
 TOLERANCE_SEC = 60  # TESTING!
 MAX_VEST_TIME = 120
 MIN_VEST_TIME = 60
 
 MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
+MAX_AMOUNT_SAT = MAX_AMOUNT * 100000000
 # MAX_VEST_TIME_SEC = MAX_VEST_TIME * 86400
 # MIN_VEST_TIME_SEC = MIN_VEST_TIME * 86400
 MAX_VEST_TIME_SEC = 1800 # TESTING!
@@ -113,6 +116,9 @@ class SubmitTx(Resource):
         # check if it complies with minimum allowed locked amount
         if analysis['lockedSatoshis'] < MIN_AMOUNT_SAT:
             error_msg = 'minimum amount is ' + str(MIN_AMOUNT)
+            return({'error': error_msg})
+        elif analysis['lockedSatoshis'] > MAX_AMOUNT_SAT:
+            error_msg = 'maximum amount is ' + str(MAX_AMOUNT)
             return({'error': error_msg})
 
         # check if tx is not trying to get rewards for less than
