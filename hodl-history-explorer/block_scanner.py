@@ -2,6 +2,7 @@
 
 import bitcoin
 import bitcoin.rpc
+import binascii, array
 from conf.coin import CoinParams
 
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
@@ -9,8 +10,7 @@ bitcoin.params = bitcoin.core.coreparams = CoinParams()
 proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
 
 
-for i in range(10):
-    hash = proxy.getblockhash(i)
-    print(hash)
-    print(hash.hex())
-    block = proxy.getblock(hash)
+# get first block
+hash = proxy.getblockhash(0)
+print(hash)
+block = proxy.getblock(hash)
