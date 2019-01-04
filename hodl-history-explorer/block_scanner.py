@@ -29,12 +29,19 @@ while True:
         if len(vout) > 1:
             asm = vout[1]['scriptPubKey']['asm']
             if 'OP_RETURN' in asm:
-                addrs = []
-                for v in vout:
-                    if 'addresses' in v['scriptPubKey']:
-                        addrs.append(v['scriptPubKey']['addresses'])
-                data = {'txid': tx, 'height': block['height'], 'addresses': addrs}
-                print(data)
+                hex = asm[10:]
+                try:
+                    asmd = bytes.fromhex(hex).decode('ascii')
+                    if 'REDEEM SCRIPT' in asmd:
+                        addrs = []
+                        for v in vout:
+                            if 'addresses' in v['scriptPubKey']:
+                                addrs.append(v['scriptPubKey']['addresses'])
+                        data = {'txid': tx, 'height': block['height'], 'addresses': addrs}
+                        print(data)
+                except Exception as e:
+                    # print(str(e))
+                    pass
     if 'nextblockhash' in block:
         height = int(height) + 1
         block = proxy.call('getblock', str(height))
