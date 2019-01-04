@@ -17,7 +17,7 @@ proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
 if args.height:
     height = args.height
 else:
-    height = 0
+    height = 1
 
 block = proxy.call('getblock', str(height))
 
