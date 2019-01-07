@@ -9,8 +9,8 @@ from math import log
 from mq import to_queue, send_process_queues_signal
 
 
-MIN_AMOUNT = 100
-MAX_AMOUNT = 100000
+MIN_AMOUNT = 500
+MAX_AMOUNT = 10000000
 TOLERANCE_SEC = 43200
 MAX_VEST_TIME = 120
 MIN_VEST_TIME = 60
