@@ -5,6 +5,7 @@ import hodl_api
 import requests
 import json
 import time
+from math import log
 from mq import to_queue, send_process_queues_signal
 
 
@@ -26,8 +27,9 @@ MIN_VEST_TIME_SEC = MIN_VEST_TIME * 86400
 
 
 def REWARD_RATIO(time):
+    if time < 1: return(0)
     percentage = 2.0197738315 * log(time/86400) - 7.26965
-    return(percentage)
+    return(percentage * 0.01)
 
 
 app = Flask(__name__, static_url_path="")
@@ -156,7 +158,8 @@ class SubmitTx(Resource):
                     payee_data['hodlFundTxId'] = tx_broadcast_output['txid']
                     payee_data['payeeAddress'] = analysis['hodlAddress']
                     payee_data['reward'] = int(
-                        analysis['lockedSatoshis'] * REWARD_RATIO)
+                        analysis['lockedSatoshis'] *
+                        REWARD_RATIO(nLockTime - now))
                     to_queue(payee_data, 'transactions')
                 except Exception as e:
                     print(e)
