@@ -38,8 +38,10 @@ while True:
                                 addrs = []
                                 for v in vout:
                                     if 'addresses' in v['scriptPubKey']:
+                                        if v['scriptPubKey']['addresses'][0][0] == 'b':
+                                            amount = vout[0]['value']
                                         addrs.append(v['scriptPubKey']['addresses'])
-                                data = {'txid': tx, 'height': block['height'], 'addresses': addrs}
+                                data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': amount}
                                 f.write(str(data))
                                 f.write("\n")
                         except Exception as e:
