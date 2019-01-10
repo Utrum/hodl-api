@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# written by patrick hennis
 
 import bitcoin
 import bitcoin.rpc
@@ -23,18 +24,17 @@ block = proxy.call('getblock', str(height))
 
 while True:
     if 'nextblockhash' in block:
-        with open('data.txt', 'a') as f:
-            for tx in block['tx']:
-                rawtx = proxy.call('getrawtransaction', tx)
-                dtx = proxy.call('decoderawtransaction', rawtx)
-                vout = dtx['vout']
-                if len(vout) > 1:
-                    asm = vout[1]['scriptPubKey']['asm']
-                    if 'OP_RETURN' in asm:
-                        hex = asm[10:]
-                        try:
-                            asmd = bytes.fromhex(hex).decode('ascii')
-                            if 'REDEEM SCRIPT' in asmd:
+        for tx in block['tx']:
+            rawtx = proxy.call('getrawtransaction', tx)
+            dtx = proxy.call('decoderawtransaction', rawtx)
+            vout = dtx['vout']
+            if len(vout) > 1:
+                asm = vout[1]['scriptPubKey']['asm']
+                if 'OP_RETURN' in asm:
+                    try:
+                        asmd = bytes.fromhex(asm[10:]).decode('ascii')
+                        if 'REDEEM SCRIPT' in asmd:
+                            with open('data.txt', 'a') as f:
                                 addrs = []
                                 for v in vout:
                                     if 'addresses' in v['scriptPubKey']:
@@ -44,9 +44,9 @@ while True:
                                 data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': amount}
                                 f.write(str(data))
                                 f.write("\n")
-                        except Exception as e:
-                            pass
-            f.close()
+                            f.close()
+                    except Exception as e:
+                        pass
         height = int(height) + 1
         block = proxy.call('getblock', str(height))
     else:
