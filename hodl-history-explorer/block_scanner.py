@@ -4,6 +4,8 @@
 import bitcoin
 import bitcoin.rpc
 from conf.coin import CoinParams
+from conf.ip import AddressParam
+from pymongo import MongoClient
 import argparse
 import time
 
@@ -14,6 +16,9 @@ args = parser.parse_args()
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
 proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
 
+connection = MongoClient(AddressParam.ADDRESS, 27017)
+db = connection.mydb
+collection = db.txs
 
 if args.height:
     height = args.height
@@ -41,12 +46,15 @@ while True:
                                         if v['scriptPubKey']['addresses'][0][0] == 'b':
                                             amount = vout[0]['value']
                                         addrs.append(v['scriptPubKey']['addresses'])
-                                data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': amount}
-                                f.write(str(data))
-                                f.write("\n")
+                                data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount)}
+                                # print(data)
+                                collection.insert(data)
+                                # f.write(str(data))
+                                # f.write("\n")
                             f.close()
                     except Exception as e:
                         pass
+                        # print(e)
         height = int(height) + 1
         block = proxy.call('getblock', str(height))
     else:
