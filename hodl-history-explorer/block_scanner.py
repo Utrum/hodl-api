@@ -27,6 +27,23 @@ else:
 
 block = proxy.call('getblock', str(height))
 
+
+def process(vout):
+    addrs = []
+    for v in vout:
+        if 'addresses' in v['scriptPubKey']:
+            if v['scriptPubKey']['addresses'][0][0] == 'b':
+                amount = vout[0]['value']
+            addrs.append(v['scriptPubKey']['addresses'])
+    data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount)}
+    collection.insert(data)
+    # print(data)
+    # with open('data.txt', 'a') as f:
+    #     f.write(str(data))
+    #     f.write("\n")
+    # f.close()
+
+
 while True:
     if 'nextblockhash' in block:
         for tx in block['tx']:
@@ -39,19 +56,7 @@ while True:
                     try:
                         asmd = bytes.fromhex(asm[10:]).decode('ascii')
                         if 'REDEEM SCRIPT' in asmd:
-                            with open('data.txt', 'a') as f:
-                                addrs = []
-                                for v in vout:
-                                    if 'addresses' in v['scriptPubKey']:
-                                        if v['scriptPubKey']['addresses'][0][0] == 'b':
-                                            amount = vout[0]['value']
-                                        addrs.append(v['scriptPubKey']['addresses'])
-                                data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount)}
-                                # print(data)
-                                collection.insert(data)
-                                # f.write(str(data))
-                                # f.write("\n")
-                            f.close()
+                            process(vout)
                     except Exception as e:
                         pass
                         # print(e)
