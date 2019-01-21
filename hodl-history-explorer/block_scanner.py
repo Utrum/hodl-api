@@ -34,7 +34,10 @@ def process(vout):
         if 'addresses' in v['scriptPubKey']:
             if v['scriptPubKey']['addresses'][0][0] == 'b':
                 amount = vout[0]['value']
-            addrs.append(v['scriptPubKey']['addresses'])
+            ta = v['scriptPubKey']['addresses']
+            for a in ta:
+                addrs.append(a)
+
     data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount)}
     collection.insert(data)
     # print(data)
