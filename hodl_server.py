@@ -6,6 +6,8 @@ import requests
 import json
 import time
 from mq import to_queue, send_process_queues_signal
+from pymongo import MongoClient
+from conf.ip import AddressParam
 
 
 # MIN_AMOUNT = 100
@@ -178,10 +180,28 @@ class ProcessRewards(Resource):
             return({"result": "failure"})
 
 
+
+class HodlTxs(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('address', type=str, location='json')
+        super(HodlTxs, self).__init__()
+
+    def get(self, address):
+        connection = MongoClient(AddressParam.ADDRESS, 27017)
+        db = connection.mydb
+        collection = db.txs
+        txs = []
+        for record in collection.find({'addresses': address}):
+            txs.append(record['tx'])
+        return({"result": txs})
+
+
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
 api.add_resource(ProcessRewards, '/process-rewards/')
+api.add_resource(HodlTxs, '/addrs/<address>/txs')
 
 
 if __name__ == '__main__':
