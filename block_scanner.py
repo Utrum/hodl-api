@@ -4,7 +4,7 @@
 import bitcoin
 import bitcoin.rpc
 from conf.coin import CoinParams
-from conf.ip import AddressParam
+from conf.mongodb import AddressParam
 from pymongo import MongoClient
 import argparse
 import time
@@ -16,7 +16,7 @@ args = parser.parse_args()
 bitcoin.params = bitcoin.core.coreparams = CoinParams()
 proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
 
-connection = MongoClient(AddressParam.ADDRESS, 27017)
+connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
 db = connection.mydb
 collection = db.txs
 
