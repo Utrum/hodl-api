@@ -7,7 +7,7 @@ import json
 import time
 from mq import to_queue, send_process_queues_signal
 from pymongo import MongoClient
-from conf.AddressParam import AddressParam
+from conf.mongodb import AddressParam
 
 
 # MIN_AMOUNT = 100
