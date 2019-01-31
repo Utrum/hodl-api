@@ -28,8 +28,15 @@ else:
 block = proxy.call('getblock', str(height))
 
 
+def eliminateDecimal(tx):
+    for v in tx['vout']:
+        v['value'] = float(v['value'])
+    return tx
+
+
 def process(dtx):
     addrs = []
+    dtx = eliminateDecimal(dtx)
     for v in dtx['vout']:
         if 'addresses' in v['scriptPubKey']:
             if v['scriptPubKey']['addresses'][0][0] == 'b':
@@ -38,13 +45,8 @@ def process(dtx):
             for a in ta:
                 addrs.append(a)
 
-    data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount), 'tx': str(dtx)}
+    data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount), 'tx': dtx}
     collection.insert(data)
-    # print(data)
-    # with open('data.txt', 'a') as f:
-    #     f.write(str(data))
-    #     f.write("\n")
-    # f.close()
 
 
 while True:
