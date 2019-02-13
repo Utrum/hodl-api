@@ -44,7 +44,7 @@ def process(tx):
 
     data = {'txid': tx['txid'], 'height': tx['blockheight'], 'addresses': addrs, 'amount': float(amount), 'tx': tx}
     collection.insert(data)
-    print('inserted: ' + str(data))
+    # print('inserted: ' + str(data))
 
 block = getBlockAtHeight(height)
 
