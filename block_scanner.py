@@ -60,8 +60,8 @@ while True:
                         if 'REDEEM SCRIPT' in asmd:
                             process(tx)
                     except Exception as e:
-                        # pass
-                        print(e)
+                        pass
+                        # print(e)
         height = int(height) + 1
         block = getBlockAtHeight(height)
     else:
