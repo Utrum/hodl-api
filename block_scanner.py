@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # written by patrick hennis
 
-import bitcoin
-import bitcoin.rpc
-from conf.coin import CoinParams
+import requests
 from conf.mongodb import AddressParam
 from pymongo import MongoClient
 import argparse
@@ -13,60 +11,59 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--height", help="set block height to start scan at")
 args = parser.parse_args()
 
-bitcoin.params = bitcoin.core.coreparams = CoinParams()
-proxy = bitcoin.rpc.Proxy(btc_conf_file=bitcoin.params.CONF_FILE)
+if args.height:
+    height = int(args.height)
+else:
+    height = 1
 
 connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
 db = connection.mydb
 collection = db.txs
 
-if args.height:
-    height = args.height
-else:
-    height = 1
-
-block = proxy.call('getblock', str(height))
-
-
-def eliminateDecimal(tx):
-    for v in tx['vout']:
-        v['value'] = float(v['value'])
-    return tx
+def getBlockAtHeight(height):
+    # must start at 1
+    if height < 1:
+        raise ValueError('Height must be greater than zero')
+    # get blockhash of specified height
+    r = requests.get('https://explorer.utrum.io/insight-api-komodo/block-index/' + str(height))
+    blockhash = r.json()['blockHash']
+    # get block data
+    b = requests.get('https://explorer.utrum.io/insight-api-komodo/txs/?block=' + blockhash)
+    return(b.json())
 
 
-def process(dtx):
+def process(tx):
     addrs = []
-    dtx = eliminateDecimal(dtx)
-    for v in dtx['vout']:
+    for v in tx['vout']:
         if 'addresses' in v['scriptPubKey']:
             if v['scriptPubKey']['addresses'][0][0] == 'b':
-                amount = dtx['vout'][0]['value']
+                amount = tx['vout'][0]['value']
             ta = v['scriptPubKey']['addresses']
             for a in ta:
                 addrs.append(a)
 
-    data = {'txid': tx, 'height': block['height'], 'addresses': addrs, 'amount': float(amount), 'tx': dtx}
+    data = {'txid': tx['txid'], 'height': tx['blockheight'], 'addresses': addrs, 'amount': float(amount), 'tx': tx}
     collection.insert(data)
+    print('inserted: ' + str(data))
 
+block = getBlockAtHeight(height)
 
 while True:
-    if 'nextblockhash' in block:
-        for tx in block['tx']:
-            rawtx = proxy.call('getrawtransaction', tx)
-            dtx = proxy.call('decoderawtransaction', rawtx)
-            vout = dtx['vout']
+    if block['txs'][0]['confirmations'] > 0:
+        for tx in block['txs']:
+            vout = tx['vout']
             if len(vout) > 1:
                 asm = vout[1]['scriptPubKey']['asm']
                 if 'OP_RETURN' in asm:
                     try:
                         asmd = bytes.fromhex(asm[10:]).decode('ascii')
                         if 'REDEEM SCRIPT' in asmd:
-                            process(dtx)
+                            process(tx)
                     except Exception as e:
-                        pass
-                        # print(e)
+                        # pass
+                        print(e)
         height = int(height) + 1
-        block = proxy.call('getblock', str(height))
+        block = getBlockAtHeight(height)
     else:
         print("sleeping")
         time.sleep(60)
