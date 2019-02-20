@@ -7,6 +7,10 @@ from pymongo import MongoClient
 import argparse
 import time
 
+connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
+db = connection.db
+collection = db.txs
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--height", help="set block height to start scan at")
 args = parser.parse_args()
@@ -14,11 +18,15 @@ args = parser.parse_args()
 if args.height:
     height = int(args.height)
 else:
-    height = 1
+    for x in db.txs.find({},{"last_block_scanned":1,"_id":0}):
+        if x:
+            height = x['last_block_scanned']
 
-connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
-db = connection.db
-collection = db.txs
+def updateLastBlock(height):
+    for x in db.txs.find({},{"last_block_scanned":1,"_id":0}):
+        if x:
+            scanned_height = x['last_block_scanned']
+    db.txs.update({'last_block_scanned':scanned_height},{'last_block_scanned':(height)})
 
 def getBlockAtHeight(height):
     # must start at 1
@@ -66,6 +74,7 @@ while True:
                         pass
         height = int(height) + 1
         block = getBlockAtHeight(height)
+        updateLastBlock(height)
     else:
         print("sleeping")
         time.sleep(60)
