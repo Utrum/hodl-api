@@ -17,7 +17,7 @@ else:
     height = 1
 
 connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
-db = connection.mydb
+db = connection.db
 collection = db.txs
 
 def getBlockAtHeight(height):
@@ -25,10 +25,11 @@ def getBlockAtHeight(height):
     if height < 1:
         raise ValueError('Height must be greater than zero')
     # get blockhash of specified height
-    r = requests.get('https://explorer.utrum.io/insight-api-komodo/block-index/' + str(height))
+    r = requests.get('http://95.179.150.75:3001/insight-api-komodo/block-index/' + str(height))
+    print(r)
     blockhash = r.json()['blockHash']
     # get block data
-    b = requests.get('https://explorer.utrum.io/insight-api-komodo/txs/?block=' + blockhash)
+    b = requests.get('http://95.179.150.75:3001/insight-api-komodo/txs/?block=' + blockhash)
     return(b.json())
 
 
@@ -44,11 +45,12 @@ def process(tx):
 
     data = {'txid': tx['txid'], 'height': tx['blockheight'], 'addresses': addrs, 'amount': float(amount), 'tx': tx}
     collection.insert(data)
-    # print('inserted: ' + str(data))
+    print('inserted: ' + str(data))
 
 block = getBlockAtHeight(height)
 
 while True:
+    print(height)
     if block['txs'][0]['confirmations'] > 0:
         for tx in block['txs']:
             vout = tx['vout']
@@ -60,8 +62,8 @@ while True:
                         if 'REDEEM SCRIPT' in asmd:
                             process(tx)
                     except Exception as e:
+                        print(e)
                         pass
-                        # print(e)
         height = int(height) + 1
         block = getBlockAtHeight(height)
     else:
