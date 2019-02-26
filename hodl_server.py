@@ -189,7 +189,7 @@ class HodlTxs(Resource):
 
     def get(self, address):
         connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
-        db = connection.mydb
+        db = connection.db
         collection = db.txs
         txs = []
         for record in collection.find({'addresses': address}):
