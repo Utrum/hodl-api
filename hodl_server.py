@@ -187,12 +187,12 @@ class HodlTxs(Resource):
         self.reqparse.add_argument('address', type=str, location='json')
         super(HodlTxs, self).__init__()
 
-    def get(self, address):
+    def get(self, address, num=0):
         connection = MongoClient(AddressParam.ADDRESS, AddressParam.PORT)
         db = connection.db
         collection = db.txs
         txs = []
-        for record in collection.find({'addresses': address}):
+        for record in collection.find({'addresses': address}).skip(num).limit(10):
             txs.append(record['tx'])
         return({"items": txs[::-1]})
 
@@ -201,7 +201,7 @@ api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
 api.add_resource(Spend, '/spend/<pubkey>/<int:nlocktime>')
 api.add_resource(SubmitTx, '/submit-tx/')
 api.add_resource(ProcessRewards, '/process-rewards/')
-api.add_resource(HodlTxs, '/addrs/<address>/txs')
+api.add_resource(HodlTxs, '/addrs/<address>/txs', '/addrs/<address>/txs/<int:num>')
 
 
 if __name__ == '__main__':
