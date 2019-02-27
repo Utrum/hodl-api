@@ -194,7 +194,7 @@ class HodlTxs(Resource):
         txs = []
         for record in collection.find({'addresses': address}):
             txs.append(record['tx'])
-        return({"result": txs})
+        return({"items": txs[::-1]})
 
 
 api.add_resource(Create, '/create/<pubkey>/<int:nlocktime>')
