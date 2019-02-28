@@ -89,8 +89,8 @@ while True:
                 if 'OP_RETURN' in asm:
                     try:
                         # decode hex
-                        asmd = bytes.fromhex(asm[10:]).decode('ascii')
-                        if 'REDEEM SCRIPT' in asmd:
+                        decoded_asm = bytes.fromhex(asm[10:]).decode('ascii')
+                        if 'REDEEM SCRIPT' in decoded_asm:
                             process(tx)
                     except Exception as e:
                         # print for testing
