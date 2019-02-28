@@ -59,15 +59,13 @@ def process(tx):
     for v in tx['vout']:
         # get value from tx
         if 'addresses' in v['scriptPubKey']:
-            if v['scriptPubKey']['addresses'][0][0] == 'b':
-                amount = tx['vout'][0]['value']
             # get all addresses involved in tx
             ta = v['scriptPubKey']['addresses']
             for a in ta:
                 addrs.append(a)
 
     # create data to be inserted
-    data = {'txid': tx['txid'], 'height': tx['blockheight'], 'addresses': addrs, 'amount': float(amount), 'tx': tx}
+    data = {'txid': tx['txid'], 'height': tx['blockheight'], 'addresses': addrs, 'tx': tx}
     collection.insert(data)
     # for testing
     print('inserted: ' + str(data))
@@ -90,7 +88,7 @@ while True:
                     try:
                         # decode hex
                         decoded_asm = bytes.fromhex(asm[10:]).decode('ascii')
-                        if 'REDEEM SCRIPT' in decoded_asm:
+                        if 'REDEEM SCRIPT' in decoded_asm or 'HODL FUNDS UNLOCKED' in decoded_asm:
                             process(tx)
                     except Exception as e:
                         # print for testing
