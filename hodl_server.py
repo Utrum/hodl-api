@@ -5,23 +5,27 @@ import hodl_api
 import requests
 import json
 import time
+from math import log
 from mq import to_queue, send_process_queues_signal
 
 
-# MIN_AMOUNT = 100
-MIN_AMOUNT = 0.01  # TESTING!
-# TOLERANCE_SEC = 43200
-TOLERANCE_SEC = 60  # TESTING!
+MIN_AMOUNT = 500
+MAX_AMOUNT = 10000000
+TOLERANCE_SEC = 43200
 MAX_VEST_TIME = 120
 MIN_VEST_TIME = 60
 
 MIN_AMOUNT_SAT = MIN_AMOUNT * 100000000
-# MAX_VEST_TIME_SEC = MAX_VEST_TIME * 86400
-# MIN_VEST_TIME_SEC = MIN_VEST_TIME * 86400
-MAX_VEST_TIME_SEC = 1800 # TESTING!
-MIN_VEST_TIME_SEC = 900 # TESTING!
+MAX_AMOUNT_SAT = MAX_AMOUNT * 100000000
+MAX_VEST_TIME_SEC = MAX_VEST_TIME * 86400
+MIN_VEST_TIME_SEC = MIN_VEST_TIME * 86400
 
-REWARD_RATIO = 0.0083
+
+def REWARD_RATIO(time):
+    if time < 1: return(0)
+    percentage = 2.0197738315 * log(time/86400) - 7.26965
+    return(percentage * 0.01)
+
 
 app = Flask(__name__, static_url_path="")
 api = Api(app)
@@ -114,6 +118,9 @@ class SubmitTx(Resource):
         if analysis['lockedSatoshis'] < MIN_AMOUNT_SAT:
             error_msg = 'minimum amount is ' + str(MIN_AMOUNT)
             return({'error': error_msg})
+        elif analysis['lockedSatoshis'] > MAX_AMOUNT_SAT:
+            error_msg = 'maximum amount is ' + str(MAX_AMOUNT)
+            return({'error': error_msg})
 
         # check if tx is not trying to get rewards for less than
         # the minimum allowed vesting period, or more than maximum
@@ -146,7 +153,8 @@ class SubmitTx(Resource):
                     payee_data['hodlFundTxId'] = tx_broadcast_output['txid']
                     payee_data['payeeAddress'] = analysis['hodlAddress']
                     payee_data['reward'] = int(
-                        analysis['lockedSatoshis'] * REWARD_RATIO)
+                        analysis['lockedSatoshis'] *
+                        REWARD_RATIO(nLockTime - now))
                     to_queue(payee_data, 'transactions')
                 except Exception as e:
                     print(e)

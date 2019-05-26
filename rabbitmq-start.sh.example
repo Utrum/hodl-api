@@ -1,0 +1,9 @@
+#!/bin/bash
+
+docker run --rm -d \
+  --hostname rabbitmq \
+  --name rabbitmq \
+  -p 127.0.0.1:5672:5672 \
+  -e RABBITMQ_ERLANG_COOKIE="Super Secret!" \
+  rabbitmq:3
+

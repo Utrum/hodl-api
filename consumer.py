@@ -11,7 +11,7 @@ from mq import to_queue
 
 
 BATCH_LENGTH = 3
-REQ_CONFS = 2
+REQ_CONFS = 20
 
 
 connection = pika.BlockingConnection(
