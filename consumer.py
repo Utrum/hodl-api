@@ -25,7 +25,7 @@ for q in ['unconfirmed', 'confirmed', 'transactions', consuming_q]:
 
 def sendmany(payments):
     proxy = bitcoin.rpc.Proxy(btc_conf_file=CoinParams.CONF_FILE)
-    output = proxy.sendmany("", payments)
+    output = proxy.sendmany("", payments, 0)
     return(output)
 
 
