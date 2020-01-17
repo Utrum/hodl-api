@@ -4,7 +4,7 @@ RUN apt update && apt -y install python3-pip git
 
 RUN pip3 install requests pika python-bitcoinlib
 
-LABEL version="20190123a"
+LABEL version="20200117a"
 RUN git clone https://github.com/Utrum/hodl-api.git \
   && cd hodl-api \
   && git checkout dev
